@@ -1,43 +1,56 @@
-import {type ChangeEvent, type KeyboardEvent, useState} from 'react'
-import {Button} from './Button'
+import { Button, TextField } from "@mui/material"
+import { ChangeEvent, KeyboardEvent, useState } from "react"
+import AddCircleOutLineIcon from '@mui/icons-material/AddCircleOutLine';
 
 type Props = {
-  onCreateItem: (title: string) => void
+    createItem: (itemTitle: string) => void
 }
 
-export const CreateItemForm = ({ onCreateItem }: Props) => {
-  const [title, setTitle] = useState('')
-  const [error, setError] = useState<string | null>(null)
+export const CreateItemForm = ({ createItem }: Props) => {
+    const [itemTitle, setItemTitle] = useState('')
+    const [error, setError] = useState<string | null>(null)
 
-  const createItemHandler = () => {
-    const trimmedTitle = title.trim()
-    if (trimmedTitle !== '') {
-      onCreateItem(trimmedTitle)
-      setTitle('')
-    } else {
-      setError('Title is required')
+    const changeItemTitleHandler = (event: ChangeEvent<HTMLInputElement>) => {
+        setItemTitle(event.currentTarget.value)
+        setError(null)
     }
-  }
 
-  const changeTitleHandler = (event: ChangeEvent<HTMLInputElement>) => {
-    setTitle(event.currentTarget.value)
-    setError(null)
-  }
-
-  const createItemOnEnterHandler = (event: KeyboardEvent<HTMLInputElement>) => {
-    if (event.key === 'Enter') {
-      createItemHandler()
+    const createItemHandler = () => {
+        const trimmedTitle = itemTitle.trim()
+        if (trimmedTitle !== '') {
+            createItem(trimmedTitle)
+            setItemTitle('')
+        } else {
+            setError('Title is required')
+        }
     }
-  }
+    const createTaskOnEnterHandler = (event: KeyboardEvent<HTMLInputElement>) => {
+        if (event.key === 'Enter') {
+            createItemHandler()
+        }
+    }
 
-  return (
-      <div>
-        <input className={error ? 'error' : ''}
-               value={title}
-               onChange={changeTitleHandler}
-               onKeyDown={createItemOnEnterHandler}/>
-        <Button title={'+'} onClick={createItemHandler} />
-        {error && <div className={'error-message'}>{error}</div>}
-      </div>
-  )
+    return (
+        <div>
+            <TextField
+                size="small"
+                variant="outlined"
+                
+                value={itemTitle}
+                onChange={changeItemTitleHandler}
+                onKeyDown={createTaskOnEnterHandler}
+                error={!!error}
+                helperText={error}
+            />
+            <Button
+                disableElevation
+                variant="contained"
+                onClick={createItemHandler}
+                endIcon={<AddCircleOutLineIcon />}
+            >
+                add
+            </Button>
+            {/* {error && <div className={'error-message'}>{error}</div>} */}
+        </div>
+    )
 }
