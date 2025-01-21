@@ -5,6 +5,7 @@ import { CreateItemForm } from './CreateItemForm'
 import { EditableSpan } from './EditableSpan'
 import { Box, Button, Checkbox, IconButton, List, ListItem, ListItemIcon, Typography } from '@mui/material'
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
+import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import { containerSx, getListItemSx } from './TodolistItem.styles'
 
 type Props = {
@@ -66,14 +67,16 @@ export const TodolistItem = (props: Props) => {
   return (
     <div>
       <div className={'container'}>
-        <Typography variant='h5' align='center' typography={'h5'}>
-          <EditableSpan title={title} changeTitle={changeTodolistTitleHandler} />
-        </Typography>
-        <IconButton
-          color="secondary"
-          onClick={deleteTodolistHandler}>
-          <DeleteForeverIcon />
-        </IconButton>
+        
+          <Typography variant="h5" align={"center"} sx={{fontWeight: 700}}>
+            <EditableSpan title={title} changeTitle={changeTodolistTitleHandler} />
+          </Typography>
+          <IconButton
+            color="secondary"
+            onClick={deleteTodolistHandler}>
+            <DeleteForeverIcon />
+          </IconButton>
+        
       </div>
       <CreateItemForm createItem={createTaskHandler} />
       {/* <div>
@@ -104,7 +107,7 @@ export const TodolistItem = (props: Props) => {
             return (
               <ListItem
                 divider
-                key={task.id} 
+                key={task.id}
                 secondaryAction={
                   <IconButton
                     color="secondary"
@@ -123,8 +126,9 @@ export const TodolistItem = (props: Props) => {
 
 
                 <Box sx={getListItemSx(task.isDone)}>
-                <EditableSpan title={task.title} changeTitle={changeTaskTitleHandler} />
+                  <EditableSpan title={task.title} changeTitle={changeTaskTitleHandler} />
                 </Box>
+
 
               </ListItem>
             )

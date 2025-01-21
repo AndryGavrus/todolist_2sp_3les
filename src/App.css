@@ -4,10 +4,26 @@
   width: 100vw;
 }
 
+/* .app > div {
+  margin-right: 50px;
+} */
+
 .container {
   display: flex;
   justify-content: center;
+  margin: 0 auto;
+}
 
+.error {
+  border: red 1px solid;
+}
+
+.error-message {
+  color: red;
+}
+
+.active-filter {
+  background-color: lightgreen;
 }
 
 .is-done {

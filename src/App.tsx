@@ -1,14 +1,18 @@
 import './App.css'
-import { useState } from 'react'
+import { useReducer, useState } from 'react'
 import { v1 } from 'uuid'
 import { TodolistItem } from './TodolistItem'
 import { CreateItemForm } from './CreateItemForm'
-import { AppBar, Container, CssBaseline, Grid2, IconButton, Paper, Toolbar } from '@mui/material'
+import AppBar from '@mui/material/AppBar'
+import Toolbar from '@mui/material/Toolbar'
+import IconButton from '@mui/material/IconButton'
 import MenuIcon from '@mui/icons-material/Menu'
-import { containerSx, MaterialUISwitch } from './TodolistItem.styles'
+import { Container, CssBaseline, Grid2, Paper, Switch } from '@mui/material'
+import { containerSx } from './TodolistItem.styles'
 import { NavButton } from './NavButton'
 import { createTheme, ThemeProvider } from '@mui/material/styles';
-import { orange, green } from '@mui/material/colors';
+import { green, amber } from '@mui/material/colors';
+import { ChangeTodolistFilterAC, ChangeTodolistTitleAC, CreateTodolistAC, DeleteTododlistAC, todolistsReducer } from './model/todolists-reducer'
 
 export type Todolist = {
   id: string
@@ -27,13 +31,16 @@ export type FilterValues = 'all' | 'active' | 'completed'
 export type TasksState = Record<string, Task[]>
 
 export const App = () => {
+
   const todolistId1 = v1()
   const todolistId2 = v1()
 
-  const [todolists, setTodolists] = useState<Todolist[]>([
+  const initialState: Todolist[] =  [
     { id: todolistId1, title: 'What to learn', filter: 'all' },
     { id: todolistId2, title: 'What to buy', filter: 'all' },
-  ])
+  ]
+
+  const [todolists, dispatchTodolists] = useReducer(todolistsReducer, initialState)
 
   const [tasks, setTasks] = useState<TasksState>({
     [todolistId1]: [
@@ -44,14 +51,9 @@ export const App = () => {
     [todolistId2]: [
       { id: v1(), title: 'Rest API', isDone: true },
       { id: v1(), title: 'GraphQL', isDone: false },
-      { id: v1(), title: 'MUI', isDone: false },
-
+      { id: v1(), title: 'GraphQL', isDone: false },
     ],
-
   })
-
-
-
   // tasks
   // C
   const createTask = (todolistId: string, title: string) => {
@@ -74,106 +76,105 @@ export const App = () => {
     setTasks({ ...tasks, [todolistId]: tasks[todolistId].filter(task => task.id !== taskId) })
   }
 
-
   //todolists
   //C
   const createTodolist = (title: string) => {
-    const todolistId = v1()
-    const newTodolist: Todolist = { id: todolistId, title: title, filter: 'all' }
-    setTodolists([...todolists, newTodolist])
-    setTasks({ ...tasks, [todolistId]: [] })
+    const action = CreateTodolistAC(title)
+    dispatchTodolists(action)
+    setTasks({ ...tasks, [action.payload.id]: [] })
+    //dispatchTasks(action)
   }
 
   //U1
   const changeFilter = (todolistId: string, filter: FilterValues) => {
-    setTodolists(todolists.map(todolist => todolist.id === todolistId ? { ...todolist, filter } : todolist))
+    const action = ChangeTodolistFilterAC({ id: todolistId, filter })
+    dispatchTodolists(action)
   }
 
   //U2
   const changeTodolistTitle = (todolistId: string, title: string) => {
-    setTodolists(todolists.map(todolist => todolist.id === todolistId ? { ...todolist, title } : todolist))
+    const action = ChangeTodolistTitleAC({id: todolistId, title})
+    dispatchTodolists(action)
   }
 
   //D
   const deleteTodolist = (todolistId: string) => {
-    setTodolists(todolists.filter(todolist => todolist.id !== todolistId))
+    const action = DeleteTododlistAC(todolistId)
+    dispatchTodolists(action)
     delete tasks[todolistId]
     setTasks({ ...tasks })
+    //dispatchTasks(action)
   }
 
 
-
-const [isLightMode, setIsLightMode] = useState(true)
-const changeThemeHandler = () => {
-  setIsLightMode(!isLightMode)
-}
-
-const theme = createTheme(
-  {
+  const [isLightMode, setIsLightMode] = useState(true)
+  const changeThemeHandler = () => setIsLightMode(!isLightMode)
+  const theme = createTheme({
     palette: {
       primary: green,
-      secondary: orange,
-      mode: isLightMode? 'light': 'dark'
+      secondary: amber,
+      mode: isLightMode ? "light" : "dark"
     },
-  }
-)
+  })
+
+
 
 
 
   return (
     <div className="app">
       <ThemeProvider theme={theme}>
-        <CssBaseline/>
-      <AppBar position="static">
-        <Toolbar>
-          <Container maxWidth={'lg'} sx={containerSx}>
-            <IconButton color="inherit">
-              <MenuIcon />
-            </IconButton>
-            <div>
-              <MaterialUISwitch onChange={changeThemeHandler}/>
-              <NavButton>Sign in</NavButton>
-              <NavButton>Sign up</NavButton>
-              <NavButton background={theme.palette.secondary.main}>Faq</NavButton>            
-            </div>
-          </Container>
-        </Toolbar>
-      </AppBar>
-      <Container maxWidth={'lg'}>
-        <Grid2 container sx={{ p: '15px 0' }}>
-          <CreateItemForm createItem={createTodolist} />
-        </Grid2>
-        <Grid2 container spacing={4}>
-          {todolists.map(todolist => {
-            const todolistTasks = tasks[todolist.id]
-            let filteredTasks = todolistTasks
-            if (todolist.filter === 'active') {
-              filteredTasks = todolistTasks.filter(task => !task.isDone)
-            }
-            if (todolist.filter === 'completed') {
-              filteredTasks = todolistTasks.filter(task => task.isDone)
-            }
+        <CssBaseline />
+        <AppBar position="static">
+          <Toolbar>
+            <Container maxWidth={'lg'} sx={containerSx}>
+              <IconButton color="inherit">
+                <MenuIcon />
+              </IconButton>
+              <div>
+                <Switch onChange={changeThemeHandler} />
+                <NavButton>Sign in</NavButton>
+                <NavButton>Sign up</NavButton>
+                <NavButton background={theme.palette.secondary.main}>Faq</NavButton>
+              </div>
+            </Container>
+          </Toolbar>
+        </AppBar>
+        <Container maxWidth={'lg'}>
+          <Grid2 container sx={{ p: "15px 0" }}>
+            <CreateItemForm createItem={createTodolist} />
+          </Grid2>
+          <Grid2 container spacing={4}>
+            {todolists.map(todolist => {
+              const todolistTasks = tasks[todolist.id]
+              let filteredTasks = todolistTasks
+              if (todolist.filter === 'active') {
+                filteredTasks = todolistTasks.filter(task => !task.isDone)
+              }
+              if (todolist.filter === 'completed') {
+                filteredTasks = todolistTasks.filter(task => task.isDone)
+              }
 
-            return (
-              <Grid2 key={todolist.id}>
-                <Paper sx={{ p: '15px' }}>
-                  <TodolistItem
-                    todolist={todolist}
-                    tasks={filteredTasks}
-                    deleteTask={deleteTask}
-                    changeFilter={changeFilter}
-                    createTask={createTask}
-                    changeTaskStatus={changeTaskStatus}
-                    deleteTodolist={deleteTodolist}
-                    changeTaskTitle={changeTaskTitle}
-                    changeTodolistTitle={changeTodolistTitle}
-                  />
-                </Paper>
-              </Grid2>
-            )
-          })}
-        </Grid2>
-      </Container>
+              return (
+                <Grid2 key={todolist.id}>
+                  <Paper elevation={8} sx={{ p: "15px" }}>
+                    <TodolistItem
+                      todolist={todolist}
+                      tasks={filteredTasks}
+                      deleteTask={deleteTask}
+                      changeFilter={changeFilter}
+                      createTask={createTask}
+                      changeTaskStatus={changeTaskStatus}
+                      deleteTodolist={deleteTodolist}
+                      changeTaskTitle={changeTaskTitle}
+                      changeTodolistTitle={changeTodolistTitle}
+                    />
+                  </Paper>
+                </Grid2>
+              )
+            })}
+          </Grid2>
+        </Container>
       </ThemeProvider>
     </div>
   )
